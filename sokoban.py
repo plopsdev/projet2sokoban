@@ -18,20 +18,12 @@ class Sokoban(Problem):
     def actions(self, state):
         directions= [[1, 0], [-1, 0], [0, -1], [0, 1]]
 
-        #filtres en fonction des murs
-
         for direction in directions:
             direction_checked[0] = state.curr_pos[0] + direction [0]
             direction_checked[1] = state.curr_pos[1] + direction [1]
 
-            if state.grid[direction_checked[0]][direction_checked[1]] == "#":
+            if state.grid[direction_checked[0]][direction_checked[1]] == "#": #filtres en fonction des murs
                 directions.remove(direction)
-        
-        #filtres en fonction des boites
-        #note d'optimisation: réunir tous les if dans un seul for direction in directions
-        for direction in directions:
-            direction_checked[0] = state.curr_pos[0] + direction [0]
-            direction_checked[1] = state.curr_pos[1] + direction [1]
 
             if state.grid[direction_checked[0]][direction_checked[1]] == "$": #todo: ajouter un indicateur pour communiquer à result qu'une boite à été déplacée -> ajouter une lettre 
                 for side in directions: #check around the box
@@ -40,11 +32,27 @@ class Sokoban(Problem):
 
                     if (state.grid[side_checked[0]][direction_checked[1]] == "#" or "$") and (side == direction): #si une boite est présente ou un mur autour de la boite initial, vérifie que ca soit dans la meme direction, et annule l'action auquel cas
                         directions.remove(direction)
-
-            
+        return directions
         
     def result(self, state, action):
-        #todo
+        #si la nouvelle position du personnage coincide avec la position d'une caisse, c'est que ce déplacement a été validée, il s'agit donc de la translater dans le même sens
+        new_state = deepcopy(state)
+        
+        new_state.grid[state.curr_pos[0]][state.curr_pos[1]]=" " #remplace le slot avant déplacement par du rien
+
+        new_state.curr_pos[0]=state.curr_pos[0]+action[0]  #met à jour la current position en ajoutant la direction "action" (ex: [0, -1])
+        new_state.curr_pos[1]=state.curr_pos[1]+action[1]
+
+        new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] = "@" #remplace le slot où le personnage va par @ -> déplacement
+
+        if state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$": #si il y avait une caisse là où le personnage se déplace
+            new_state.grid[new_state.curr_pos[0]+action[0]][new_state.curr_pos[1]+action[1]] = "$" #immite le déplacement de la caisse en allant écrire $ un déplacent plus loin dans la direction de action
+        for goal_pos in state.goal_pos:
+            if new_state.grid[goal_pos[0]][goal_pos[1]]=="$": #vérifier si une des position de fin correspond à un $  -> attention il va falloir gérer le cas ou la boite bouge car faut considérer l'état avant
+                new_state.curr_ok+=1    #on augmente le nombre de boite trouvées -> à chier car pose problème lorsqu'on sort une caisse d'une position win, peut être associer un goal pos avec un 1 ou 0 dans le meme ordre ?
+            elif new_state.curr_ok
+
+        return State(new_state.grid, new_state.curr_pos, state.goal_pos)
+        
     def goal_test(self, state):
         #todo
-
