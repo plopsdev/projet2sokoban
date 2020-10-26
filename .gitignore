@@ -1,0 +1,4 @@
+# VS Code local files
+.vscode/
+
+__pycache__
