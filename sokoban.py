@@ -5,16 +5,17 @@ from search import *
 from copy import deepcopy
 
 class State:
-    def __init__(self, grid, curr_pos, goal_pos, curr_ok):
+    def __init__(self, grid, curr_pos, goal_pos, boxes_pos, curr_ok):
         self.grid=grid
         self.curr_pos=curr_pos #position of the @
         self.goal_pos=goal_pos #tuple of the position(s) of .
         self.curr_ok=curr_ok #number of $ at the spot .
+        self.boxes_pos=boxes_pos
 
 class Sokoban(Problem):
     def __init__(self, initial):
         #todo : ouverture des deux fichiers pour remplir grid, curr_pos et goal_pos
-        self.initial = State(grid, curr_pos, goal_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
+        self.initial = State(grid, curr_pos, goal_pos, boxes_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
     
     def goal_test(self, state):
         return state.curr_ok == len(state.goal_pos)
@@ -67,6 +68,14 @@ class Sokoban(Problem):
         
 
 
-######################
-# Auxiliary function #
-######################
+####################
+# Launch the search#
+####################
+
+tic = time.process_time()
+problem = Sokoban(sys.argv[1])
+solution = search.breadth_first_tree_search(problem)
+for n in solution.path():
+    print(n.state)
+toc = time.process_time()
+print("Le programme s'est exécuté en "+str(toc-tic)+" secondes.")
