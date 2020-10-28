@@ -13,14 +13,14 @@ class State:
 
 class Sokoban(Problem):
     def __init__(self, initial):
-        #todo : ouverture des deux fichiers pour remplir grid et curr_pos
+        #todo : ouverture des deux fichiers pour remplir grid, curr_pos et goal_pos
         self.initial = State(grid, curr_pos, goal_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
     
     def goal_test(self, state):
         return state.curr_ok == len(state.goal_pos)
     
     def actions(self, state):
-        directions= [[1, 0], [-1, 0], [0, -1], [0, 1]]
+        directions= [[1, 0], [-1, 0], [0, -1], [0, 1]] #DOWN UP LEFT RIGHT
         direction_checked=[0, 0]
 
         for direction in directions:
@@ -53,8 +53,8 @@ class Sokoban(Problem):
 
         new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] = "@" #remplace le slot où le personnage va par @ -> déplacement
 
-        if state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$": #si il y avait une caisse là où le personnage se déplace
-            new_state.grid[new_state.curr_pos[0]+action[0]][new_state.curr_pos[1]+action[1]] = "$" #immite le déplacement de la caisse en allant écrire $ un déplacent plus loin dans la direction de action
+        if state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$": #si il y avait une caisse là où le personnage se déplace, (on check l'ancien state)
+            new_state.grid[new_state.curr_pos[0]+action[0]][new_state.curr_pos[1]+action[1]] = "$" #immite le déplacement de la caisse en allant écrire $ un déplacent plus loin dans la direction d'action
         
         
         #boucle de calcul de boite à leur place -> TODO faire une fonction
