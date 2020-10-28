@@ -21,7 +21,7 @@ class Sokoban(Problem):
     
     def actions(self, state):
         directions= [[1, 0], [-1, 0], [0, -1], [0, 1]]
-        direction_checked=[]
+        direction_checked=[0, 0]
 
         for direction in directions:
             direction_checked[0] = state.curr_pos[0] + direction [0]
@@ -31,7 +31,7 @@ class Sokoban(Problem):
                 directions.remove(direction)
 
             if state.grid[direction_checked[0]][direction_checked[1]] == "$": #todo: ajouter un indicateur pour communiquer à result qu'une boite à été déplacée -> ajouter une lettre 
-                side_checked=[]
+                side_checked=[0, 0]
 
                 for side in directions: #check around the box
                     side_checked[0]=direction_checked[0]+side[0]
