@@ -12,6 +12,14 @@ class State:
         self.curr_ok=curr_ok #number of $ at the spot .
         self.boxes_pos=boxes_pos
 
+    # def searchDeadlockSquare(self):
+    #     directions= [[1, 0], [-1, 0], [0, -1], [0, 1]] #DOWN UP LEFT RIGHT
+    #     deadlock_squares_pos=[[]]
+    #     for box_pos in self.boxes_pos:
+
+    #     return deadlock_squares_pos
+
+
 class Sokoban(Problem):
     def __init__(self, initial):
         #todo : ouverture des deux fichiers pour remplir grid, curr_pos et goal_pos
@@ -40,7 +48,6 @@ class Sokoban(Problem):
 
                     if (state.grid[side_checked[0]][direction_checked[1]] == "#" or "$") and (side == direction): #si une boite est présente ou un mur autour de la boite initial, vérifie que ca soit dans la meme direction, et annule l'action auquel cas
                         directions.remove(direction)
-
         return directions
         
     def result(self, state, action):
@@ -64,8 +71,9 @@ class Sokoban(Problem):
             if new_state.grid[goal_pos[0]][goal_pos[1]]=="$": #vérifier si une des position de fin correspond à un $  
                 new_state.curr_ok+=1    #on augmente le nombre de boite trouvées
 
-        return State(new_state.grid, new_state.curr_pos, state.goal_pos, new_state.curr_ok)
-        
+        return State(new_state.grid, new_state.curr_pos, state.goal_pos, new_state.curr_ok) #mettre à jour la position des boites
+
+   
 
 
 ####################
