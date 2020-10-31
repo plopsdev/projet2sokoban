@@ -1,5 +1,6 @@
 import time
 import sys
+import search
 from search import *
 from copy import deepcopy
 from itertools import chain
@@ -8,7 +9,7 @@ from itertools import chain
 
 class State:
     def __init__(self, gridInit, curr_pos, boxes_pos, goal_pos, curr_ok):      
-        self.grid=grid
+        self.grid=gridInit
         self.curr_pos=curr_pos #position of the @      
         self.goal_pos=goal_pos #array of the position(s) of .
         self.curr_ok=curr_ok #number of $ at the spot .
@@ -20,6 +21,13 @@ class State:
     #     for box_pos in self.boxes_pos:
 
     #     return deadlock_squares_pos    
+    def __str__(self):
+        string = ""
+        for l in self.grid:
+            for c in l:
+                string += c
+            string += "\n"
+        return string
 
 class Sokoban(Problem):   
     def __init__(self, initial):
@@ -66,6 +74,7 @@ class Sokoban(Problem):
         return state.curr_ok == len(state.goal_pos)
     
     def actions(self, state):
+        
         directions= [[1, 0], [-1, 0], [0, -1], [0, 1]] #DOWN UP LEFT RIGHT
         direction_checked=[0, 0]
 
@@ -88,6 +97,7 @@ class Sokoban(Problem):
         return directions
         
     def result(self, state, action):
+        print("hello")
         #si la nouvelle position du personnage coincide avec la position d'une caisse, c'est que ce déplacement a été validée, il s'agit donc de la translater dans le même sens
         new_state = deepcopy(state)
         
@@ -108,7 +118,7 @@ class Sokoban(Problem):
             if new_state.grid[goal_pos[0]][goal_pos[1]]=="$": #vérifier si une des position de fin correspond à un $  
                 new_state.curr_ok+=1    #on augmente le nombre de boite trouvées
 
-        return State(new_state.grid, new_state.curr_pos, state.goal_pos, new_state.curr_ok) #mettre à jour la position des boites
+        return State(new_state.grid, new_state.curr_pos, state.boxes_pos, state.goal_pos, new_state.curr_ok) #mettre à jour la position des boites
 
    
 
@@ -126,17 +136,18 @@ class Sokoban(Problem):
 #####################
 
 #ici une deuxième mesure du temps, moins précise
-# tic = time.process_time()
+tic = time.process_time()
 
 # problem = Sokoban(sys.argv[1])
 # solution = astar_search(problem,) #todo insérer ici une fonction heuristique h en paramètre
 # for n in solution.path():
 #     print(n.state)
 
-# tic = time.process_time()
-# problem = Sokoban(sys.argv[1])
-# solution breadth_first_tree_search(problem)
-# for n in solution.path():
-#     print(n.state)
-# toc = time.process_time()
-# print("Le programme s'est exécuté en "+str(toc-tic)+" secondes.")
+tic = time.process_time()
+problem = Sokoban(sys.argv[1])
+solution = breadth_first_graph_search(problem)
+for n in solution.path():
+    print(n.state)
+toc = time.process_time()
+print("Le programme s'est exécuté en "+str(toc-tic)+" secondes.")
+#python sokoban.py ./benchsGiven/sokoInst00 
