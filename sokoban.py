@@ -62,6 +62,7 @@ class Sokoban(Problem):
 
         goal_pos.append([[i, j] for i, nl in enumerate(gridGoal) for j, nle in enumerate(nl) if nle == "."])
         goal_pos = list(chain(*goal_pos))
+
         
         self.initial = State(gridInit, curr_pos, boxes_pos, goal_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
         self.boxes_pos=boxes_pos
@@ -71,7 +72,10 @@ class Sokoban(Problem):
 
     
     def goal_test(self, state):
-        return state.curr_ok == len(state.goal_pos)
+
+        if state.curr_ok == len(state.goal_pos):
+
+            return True
     
     def actions(self, state):
         
@@ -97,9 +101,9 @@ class Sokoban(Problem):
         return directions
         
     def result(self, state, action):
-        print("hello")
         #si la nouvelle position du personnage coincide avec la position d'une caisse, c'est que ce déplacement a été validée, il s'agit donc de la translater dans le même sens
         new_state = deepcopy(state)
+        print(new_state.grid)
         
         new_state.grid[state.curr_pos[0]][state.curr_pos[1]]=" " #remplace le slot avant déplacement par du rien
 
@@ -113,9 +117,10 @@ class Sokoban(Problem):
         
         
         #boucle de calcul de boite à leur place -> TODO faire une fonction
-        new_state.curr_ok=0
-        for goal_pos in state.goal_pos:
-            if new_state.grid[goal_pos[0]][goal_pos[1]]=="$": #vérifier si une des position de fin correspond à un $  
+        new_state.curr_ok=0 
+        for goal in state.goal_pos:
+            print(new_state.grid[goal[0]][goal[1]])
+            if new_state.grid[goal[0]][goal[1]]=="$": #vérifier si une des position de fin correspond à un $  
                 new_state.curr_ok+=1    #on augmente le nombre de boite trouvées
 
         return State(new_state.grid, new_state.curr_pos, state.boxes_pos, state.goal_pos, new_state.curr_ok) #mettre à jour la position des boites
