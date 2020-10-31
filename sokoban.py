@@ -63,11 +63,8 @@ class Sokoban(Problem):
         goal_pos.append([[i, j] for i, nl in enumerate(gridGoal) for j, nle in enumerate(nl) if nle == "."])
         goal_pos = list(chain(*goal_pos))
 
-        
         self.initial = State(gridInit, curr_pos, boxes_pos, goal_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
-        self.boxes_pos=boxes_pos
-        #todo : ouverture des deux fichiers pour remplir grid, curr_pos et goal_pos
-        self.initial = State(gridInit, curr_pos, goal_pos, boxes_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
+
 
 
     
@@ -79,12 +76,13 @@ class Sokoban(Problem):
     
     def actions(self, state):
         
-        directions= [[1, 0], [-1, 0], [0, -1], [0, 1]] #DOWN UP LEFT RIGHT
+        directions= [[1, 0], [0, -1], [-1, 0], [0, 1]] #DOWN LEFT UP RIGHT
         direction_checked=[0, 0]
 
         for direction in directions:
             direction_checked[0] = state.curr_pos[0] + direction [0]
             direction_checked[1] = state.curr_pos[1] + direction [1]
+            # print(direction_checked)
 
             if state.grid[direction_checked[0]][direction_checked[1]] == "#": #filtres en fonction des murs
                 directions.remove(direction)
@@ -98,28 +96,30 @@ class Sokoban(Problem):
 
                     if (state.grid[side_checked[0]][direction_checked[1]] == "#" or "$") and (side == direction): #si une boite est présente ou un mur autour de la boite initial, vérifie que ca soit dans la meme direction, et annule l'action auquel cas
                         directions.remove(direction)
+        # print(directions)
         return directions
         
     def result(self, state, action):
-        #si la nouvelle position du personnage coincide avec la position d'une caisse, c'est que ce déplacement a été validée, il s'agit donc de la translater dans le même sens
+        # print (action)
         new_state = deepcopy(state)
-        print(new_state.grid)
+
         
         new_state.grid[state.curr_pos[0]][state.curr_pos[1]]=" " #remplace le slot avant déplacement par du rien
 
         new_state.curr_pos[0]=state.curr_pos[0]+action[0]  #met à jour la current position en ajoutant la direction "action" (ex: [0, -1])
         new_state.curr_pos[1]=state.curr_pos[1]+action[1]
-
+        # print(new_state.curr_pos)
         new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] = "@" #remplace le slot où le personnage va par @ -> déplacement
 
         if state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$": #si il y avait une caisse là où le personnage se déplace, (on check l'ancien state)
             new_state.grid[new_state.curr_pos[0]+action[0]][new_state.curr_pos[1]+action[1]] = "$" #immite le déplacement de la caisse en allant écrire $ un déplacent plus loin dans la direction d'action
         
+        for row in new_state.grid:
+            print(row)
         
         #boucle de calcul de boite à leur place -> TODO faire une fonction
         new_state.curr_ok=0 
         for goal in state.goal_pos:
-            print(new_state.grid[goal[0]][goal[1]])
             if new_state.grid[goal[0]][goal[1]]=="$": #vérifier si une des position de fin correspond à un $  
                 new_state.curr_ok+=1    #on augmente le nombre de boite trouvées
 
