@@ -1,20 +1,53 @@
 import time
 import sys
-import search
 from search import *
 from copy import deepcopy
+from itertools import chain
+
+
 
 class State:
-    def __init__(self, grid, curr_pos, goal_pos, curr_ok):
+    def __init__(self, gridInit, curr_pos, boxes_pos, goal_pos, curr_ok):      
         self.grid=grid
-        self.curr_pos=curr_pos #position of the @
-        self.goal_pos=goal_pos #tuple of the position(s) of .
+        self.curr_pos=curr_pos #position of the @      
+        self.goal_pos=goal_pos #array of the position(s) of .
         self.curr_ok=curr_ok #number of $ at the spot .
+        self.boxes_pos = boxes_pos
 
 class Sokoban(Problem):
     def __init__(self, initial):
-        #todo : ouverture des deux fichiers pour remplir grid et curr_pos
-        self.initial = State(grid, curr_pos, goal_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
+        pathInit = str(sys.argv[1] + ".init")
+        pathGoal = str(sys.argv[1] + ".goal")
+        gridInit = []
+        gridGoal = []
+        curr_pos = []
+        boxes_pos = []
+        goal_pos = []
+
+        with open(pathInit, "r") as file:
+            for line in file:
+                strippedLine = line.rstrip('\n')
+                listedLine = list(strippedLine)       
+                gridInit.append(listedLine)
+
+        for line in gridInit :
+            for col in line:
+                if col == "@":
+                    curr_pos = [gridInit.index(line), line.index(col)]
+            
+        boxes_pos.append([[i, j] for i, nl in enumerate(gridInit) for j, nle in enumerate(nl) if nle == "$"])
+        boxes_pos = list(chain(*boxes_pos))
+
+        with open(pathGoal, "r") as file:
+            for line in file:
+                strippedLine = line.rstrip('\n')
+                listedLine = list(strippedLine)       
+                gridGoal.append(listedLine)
+
+        goal_pos.append([[i, j] for i, nl in enumerate(gridGoal) for j, nle in enumerate(nl) if nle == "."])
+        goal_pos = list(chain(*goal_pos))
+        
+        self.initial = State(gridInit, curr_pos, boxes_pos, goal_pos, 0) #note on peut calculer le nb de curr_ok selon le grid initial mais dans aucun des cas il y a un ok dès le début
     
     def goal_test(self, state):
         return state.curr_ok == len(state.goal_pos)
@@ -68,3 +101,18 @@ class Sokoban(Problem):
 ######################
 # Auxiliary function #
 ######################
+
+#####################
+# Launch the search #
+#####################
+
+#ici une deuxième mesure du temps, moins précise
+tic = time.process_time()
+
+problem = Sokoban(sys.argv[1])
+solution = astar_search(problem,) #todo insérer ici une fonction heuristique h en paramètre
+for n in solution.path():
+    print(n.state)
+    
+toc = time.process_time()
+print("Le programme s'est exécuté en "+str(toc-tic)+" secondes.")

@@ -1,4 +1,6 @@
-# VS Code local files
 .vscode/
-
 __pycache__/
+
+read.py
+sokobanTest.py
+searchOld.py
