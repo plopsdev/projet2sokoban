@@ -1,10 +1,7 @@
 .vscode/
 __pycache__/
-<<<<<<< HEAD
+playground.py
 
 read.py
 sokobanTest.py
 searchOld.py
-=======
-playground.py
->>>>>>> 1121961a015355c2f9e7816145bfe674bf647603
