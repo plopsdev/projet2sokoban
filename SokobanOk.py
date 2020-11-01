@@ -19,6 +19,34 @@ global goal_pos
 # Problem class #
 #################
 
+class State:
+    def __init__(self, gridInit, boxes_pos, curr_pos):
+        # Save state variable
+        self.boxes_pos = boxes_pos
+        self.curr_pos = curr_pos
+        self.grid = gridInit
+
+    def __str__(self):
+        string = ""
+        for l in self.grid:
+            for c in l:
+                string += c
+            string += "\n"
+        return string
+
+    def __repr__(self):  # Full representation
+        return str((self.curr_pos, self.boxes_pos, self.grid))
+
+    def __eq__(self, other):
+        return (other.grid == self.grid)
+
+    def __lt__(self, node):
+        return self.grid < node.grid
+
+    def __hash__(self):
+        return self.__str__().__hash__()
+
+        
 class Sokoban(Problem):
     def __init__(self, initial):
 
@@ -112,32 +140,7 @@ class Sokoban(Problem):
         new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:]
         return new_state
 
-class State:
-    def __init__(self, gridInit, boxes_pos, curr_pos):
-        # Save state variable
-        self.boxes_pos = boxes_pos
-        self.curr_pos = curr_pos
-        self.grid = gridInit
 
-    def __str__(self):
-        string = ""
-        for l in self.grid:
-            for c in l:
-                string += c
-            string += "\n"
-        return string
-
-    def __repr__(self):  # Full representation
-        return str((self.curr_pos, self.boxes_pos, self.grid))
-
-    def __eq__(self, other):
-        return (other.grid == self.grid)
-
-    def __lt__(self, node):
-        return self.grid < node.grid
-
-    def __hash__(self):
-        return self.__str__().__hash__()
 
 ######################
 # Auxiliary function #
