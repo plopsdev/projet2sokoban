@@ -64,7 +64,6 @@ class Sokoban(Problem):
             for line in grid_go:
                 for j in range(0, len(line)):
                     if line[j] == ".":
-                        #Avatar
                         goal_pos.append((i, j))
                 i+=1                
 
@@ -78,16 +77,14 @@ class Sokoban(Problem):
             for i in range(0, len(grid_in)):
                 grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
 
-            curr_pos = (0,0) #Original position of the avatar
+            curr_pos = [0,0] #Original position of the Character
             #Read grid for important elem
             i = 0
             for line in grid_in:
                 for j in range(0, len(line)):
                     if line[j] == "@":
-                        #Avatar
-                        curr_pos = (i, j)
+                        curr_pos = [i, j]
                     elif line[j] == "$":
-                        #Box
                         boxes_pos.append((i, j))
                 i+=1
 
@@ -204,7 +201,7 @@ def boxPush(grid, curr_pos, box_pos): #check if it's possible to push the box
             return True
     return False
 
-#Calculate the minimum position from the avatar to a box_pos
+#Calculate the minimum distance from the Character to a box_pos
 def distFromBox(state):
     best_pos = len(state.grid) + len(state.grid[0])
     for box_pos in state.boxes_pos:
@@ -217,14 +214,13 @@ def hamiltonDistance(state, box_pos):
         best_pos = min(best_pos, (abs(goal[0] - box_pos[0]) + abs(goal[1] - box_pos[1])))
     return best_pos
 
-# Heuristic function
-# Minimal value will be explored first !!!
+# Heuristic function : Combine distances of the previous optimizations
 def Heuristic(node):
-    score = 0
+    optimized_distance = 0
     for box_pos in node.state.boxes_pos:
-        score += hamiltonDistance(node.state, box_pos) * len(node.state.grid)
-    score += distFromBox(node.state)
-    return score
+        optimized_distance += hamiltonDistance(node.state, box_pos) * len(node.state.grid)
+    optimized_distance += distFromBox(node.state)
+    return optimized_distance
 
 #####################
 # Launch the search #
