@@ -1,12 +1,14 @@
 # Authors Jonathan Miel 16013 & Charles Vandermies 15123
 
+# Note : everything runs pretty quickly, execept for the instance15 that runs in about 7 minutes.
+# To run : python Sokoban.py ./benchsGiven/sokoInst{number_of_the_instance}
+
 import time
 import sys
 from copy import deepcopy
 from search import *
 
-# LEFT RIGHT UP DOWN
-directions = [[0, -1], [0, 1], [-1, 0], [1, 0]]
+directions = [[0, -1], [0, 1], [-1, 0], [1, 0]] # LEFT RIGHT UP DOWN
 global goal_pos
 
 #################
