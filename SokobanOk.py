@@ -49,81 +49,46 @@ class Sokoban(Problem):
         pathGoal = str(initial + ".goal")
         boxes_pos = [] #Orginal position of boxes
         goal_pos = [] #Final supposed position of boxes
-
+        
         with open(pathGoal, "r") as file:
-            grid_go = []
-            for line in file:
-                strippedLine = line.rstrip('\n')
-                listedLine = list(strippedLine)       
-                grid_go.append(listedLine)
+            data_read = file.read()
+            grid_go = data_read.split("\n")
             grid_go.pop(0)
             grid_go.pop()
-
+            grid_go.pop()
             for i in range(0, len(grid_go)):
-                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]       
-            goal_pos.append([[i, j] for i, nl in enumerate(grid_go) for j, nle in enumerate(nl) if nle == "."])
-            goal_pos = list(chain(*goal_pos))
-        
-        # with open(pathGoal, "r") as file:
-        #     data_read = file.read()
-        #     grid_go = data_read.split("\n")
-        #     grid_go.pop(0)
-        #     grid_go.pop()
-        #     grid_go.pop()
-        #     for i in range(0, len(grid_go)):
-        #         grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
+                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
 
-        #     i = 0
-        #     for line in grid_go:
-        #         for j in range(0, len(line)):
-        #             if line[j] == ".":
-        #                 #Avatar
-        #                 goal_pos.append((i, j))
-        #         i+=1
-                
+            i = 0
+            for line in grid_go:
+                for j in range(0, len(line)):
+                    if line[j] == ".":
+                        #Avatar
+                        goal_pos.append((i, j))
+                i+=1                
 
         with open(pathInit, "r") as file:
-            grid_in = []
-            for line in file:
-                strippedLine = line.rstrip('\n')
-                listedLine = list(strippedLine)       
-                grid_in.append(listedLine)
+            data_read = file.read()
+            grid_in = data_read.split("\n")
+            #Remove the first line and the two last ones
             grid_in.pop(0)
             grid_in.pop()
-
+            grid_in.pop()
             for i in range(0, len(grid_in)):
                 grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
 
-        for line in grid_in :
-            for col in line:
-                if col == "@":
-                    curr_pos = [grid_in.index(line), line.index(col)]
-            
-        boxes_pos.append([[i, j] for i, nl in enumerate(grid_in) for j, nle in enumerate(nl) if nle == "$"])
-        boxes_pos = list(chain(*boxes_pos))
-
-        # with open(pathInit, "r") as file:
-        #     data_read = file.read()
-        #     grid_in = data_read.split("\n")
-        #     #Remove the first line and the two last ones
-        #     grid_in.pop(0)
-        #     grid_in.pop()
-        #     grid_in.pop()
-        #     for i in range(0, len(grid_in)):
-        #         grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
-
-        #     curr_pos = (0,0) #Original position of the avatar
-        #     #Read grid for important elem
-        #     i = 0
-        #     for line in grid_in:
-        #         for j in range(0, len(line)):
-        #             if line[j] == "@":
-        #                 #Avatar
-        #                 curr_pos = (i, j)
-        #             elif line[j] == "$":
-        #                 #Box
-        #                 boxes_pos.append((i, j))
-        #         i+=1
+            curr_pos = (0,0) #Original position of the avatar
+            #Read grid for important elem
+            i = 0
+            for line in grid_in:
+                for j in range(0, len(line)):
+                    if line[j] == "@":
+                        #Avatar
+                        curr_pos = (i, j)
+                    elif line[j] == "$":
+                        #Box
+                        boxes_pos.append((i, j))
+                i+=1
 
         initial_state = State(grid_in, boxes_pos, curr_pos)
         # Subclass constructor adds other argument
@@ -154,21 +119,24 @@ class Sokoban(Problem):
 
     def result(self, state, action):
         new_state = deepcopy(state)
-        #Calculate new avatar pos
-        new_state.curr_pos = (state.curr_pos[0] + action[0], state.curr_pos[1] + action[1])
-        #Clear old pos in grid, update avatar pos in state
-        new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:]
+
+        new_state.curr_pos[0] = state.curr_pos[0] + action[0]
+        new_state.curr_pos[1] = state.curr_pos[0] + action[1]
+        
+        new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:] #replace the curr_pos before moving with blank
+
         if(new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$"):
-            #Move box_pos before updating avatar in grid
+
             for index in range(0, len(new_state.boxes_pos)):
+                side_checked=[0, 0]
+
                 if (new_state.curr_pos[0], new_state.curr_pos[1]) == new_state.boxes_pos[index]:
-                    #Calculate new coordinate
-                    new_coord_X = action[0] + new_state.curr_pos[0]
-                    new_coord_Y = action[1] + new_state.curr_pos[1]
-                    new_state.boxes_pos[index] = (new_coord_X, new_coord_Y)
-                    new_state.grid[new_coord_X] = new_state.grid[new_coord_X][:new_coord_Y] + "$" + new_state.grid[new_coord_X][new_coord_Y+1:]
-        #Update avatar in grid
-        new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:]
+                    side_checked[0] = new_state.curr_pos[0] + action[0] #update side checked
+                    side_checked[1] = new_state.curr_pos[1] + action[1]
+                    new_state.boxes_pos[index] = (side_checked[0], side_checked[1])
+                    new_state.grid[side_checked[0]] = new_state.grid[side_checked[0]][:side_checked[1]] + "$" + new_state.grid[side_checked[0]][side_checked[1]+1:]
+
+        new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:] #Update curr_pos
         return new_state
 
 
