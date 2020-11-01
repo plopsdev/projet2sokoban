@@ -49,51 +49,85 @@ class Sokoban(Problem):
         pathGoal = str(initial + ".goal")
         boxes_pos = [] #Orginal position of boxes
         goal_pos = [] #Final supposed position of boxes
-        
+
         with open(pathGoal, "r") as file:
-            data_read = file.read()
-            grid_go = data_read.split("\n")
+            grid_go = []
+            for line in file:
+                strippedLine = line.rstrip('\n')
+                listedLine = list(strippedLine)       
+                grid_go.append(listedLine)
             grid_go.pop(0)
             grid_go.pop()
-            grid_go.pop()
-            for i in range(0, len(grid_go)):
-                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
 
-            i = 0
-            for line in grid_go:
-                for j in range(0, len(line)):
-                    if line[j] == ".":
-                        #Avatar
-                        goal_pos.append((i, j))
-                i+=1
+            for i in range(0, len(grid_go)):
+                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]       
+            goal_pos.append([[i, j] for i, nl in enumerate(grid_go) for j, nle in enumerate(nl) if nle == "."])
+            goal_pos = list(chain(*goal_pos))
+        
+        # with open(pathGoal, "r") as file:
+        #     data_read = file.read()
+        #     grid_go = data_read.split("\n")
+        #     grid_go.pop(0)
+        #     grid_go.pop()
+        #     grid_go.pop()
+        #     for i in range(0, len(grid_go)):
+        #         grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
+
+        #     i = 0
+        #     for line in grid_go:
+        #         for j in range(0, len(line)):
+        #             if line[j] == ".":
+        #                 #Avatar
+        #                 goal_pos.append((i, j))
+        #         i+=1
                 
+
         with open(pathInit, "r") as file:
-            data_read = file.read()
-            grid_in = data_read.split("\n")
-            #Remove the first line and the two last ones
+            grid_in = []
+            for line in file:
+                strippedLine = line.rstrip('\n')
+                listedLine = list(strippedLine)       
+                grid_in.append(listedLine)
             grid_in.pop(0)
             grid_in.pop()
-            grid_in.pop()
-            #Truncate first and last collumn
+
             for i in range(0, len(grid_in)):
                 grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
 
-            curr_pos = (0,0) #Original position of the avatar
-            #Read grid for important elem
-            i = 0
-            for line in grid_in:
-                for j in range(0, len(line)):
-                    if line[j] == "@":
-                        #Avatar
-                        curr_pos = (i, j)
-                    elif line[j] == "$":
-                        #Box
-                        boxes_pos.append((i, j))
-                i+=1
+        for line in grid_in :
+            for col in line:
+                if col == "@":
+                    curr_pos = [grid_in.index(line), line.index(col)]
+            
+        boxes_pos.append([[i, j] for i, nl in enumerate(grid_in) for j, nle in enumerate(nl) if nle == "$"])
+        boxes_pos = list(chain(*boxes_pos))
 
-        initState = State(grid_in, boxes_pos, curr_pos)
+        # with open(pathInit, "r") as file:
+        #     data_read = file.read()
+        #     grid_in = data_read.split("\n")
+        #     #Remove the first line and the two last ones
+        #     grid_in.pop(0)
+        #     grid_in.pop()
+        #     grid_in.pop()
+        #     for i in range(0, len(grid_in)):
+        #         grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
+
+        #     curr_pos = (0,0) #Original position of the avatar
+        #     #Read grid for important elem
+        #     i = 0
+        #     for line in grid_in:
+        #         for j in range(0, len(line)):
+        #             if line[j] == "@":
+        #                 #Avatar
+        #                 curr_pos = (i, j)
+        #             elif line[j] == "$":
+        #                 #Box
+        #                 boxes_pos.append((i, j))
+        #         i+=1
+
+        initial_state = State(grid_in, boxes_pos, curr_pos)
         # Subclass constructor adds other argument
-        super().__init__(initState)
+        super().__init__(initial_state)
 
     def goal_test(self, state):
         for elem in goal_pos:
