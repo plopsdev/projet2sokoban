@@ -28,7 +28,11 @@ class State:
                 string += c
             string += "\n"
         return string
+    def __eq__(self, other):
+        return (self.array == other.array and self.currentletter == other.currentletter)
 
+    def __hash__(self):
+        return hash(self.__str__() + self.currentletter)
 class Sokoban(Problem):   
     def __init__(self, initial):
 
@@ -77,17 +81,20 @@ class Sokoban(Problem):
     def actions(self, state):
         
         directions= [[1, 0], [0, -1], [-1, 0], [0, 1]] #DOWN LEFT UP RIGHT
+        movements= [[1, 0], [0, -1], [-1, 0], [0, 1]] #DOWN LEFT UP RIGHT
         direction_checked=[0, 0]
 
         for direction in directions:
+            # print(direction)
             direction_checked[0] = state.curr_pos[0] + direction [0]
             direction_checked[1] = state.curr_pos[1] + direction [1]
             # print(direction_checked)
 
             if state.grid[direction_checked[0]][direction_checked[1]] == "#": #filtres en fonction des murs
-                directions.remove(direction)
+                movements.remove(direction)
 
-            if state.grid[direction_checked[0]][direction_checked[1]] == "$": #todo: ajouter un indicateur pour communiquer à result qu'une boite à été déplacée -> ajouter une lettre 
+
+            if state.grid[direction_checked[0]][direction_checked[1]] == "$": 
                 side_checked=[0, 0]
 
                 for side in directions: #check around the box
@@ -95,9 +102,9 @@ class Sokoban(Problem):
                     side_checked[1]=direction_checked[1]+side[1]
 
                     if (state.grid[side_checked[0]][direction_checked[1]] == "#" or "$") and (side == direction): #si une boite est présente ou un mur autour de la boite initial, vérifie que ca soit dans la meme direction, et annule l'action auquel cas
-                        directions.remove(direction)
-        # print(directions)
-        return directions
+                        movements.remove(direction)
+        print(movements)
+        return movements
         
     def result(self, state, action):
         # print (action)
@@ -136,6 +143,29 @@ class Sokoban(Problem):
 # Auxiliary function #
 ######################
 
+#Calculate the minimum position from the avatar to a box
+def calculateDistFromBoxes(state):
+    best = len(state.grid) + len(state.grid[0])
+    for box in state.listOfBoxesPos:
+        best = min(best, (abs(box[0] - state.avatarPos[0]) + abs(box[1] - state.avatarPos[1])))
+    return best
+
+# Return the minimum hamilton distance to reach a goal
+def minDistOfBoxToGoal(state, box):
+    best = len(state.grid) + len(state.grid[0])
+    for goal in state.goal_pos:
+        best = min(best, (abs(goal[0] - box[0]) + abs(goal[1] - box[1])))
+    return best
+
+# Heuristic function
+# Minimal value will be explored first !!!
+def heuristicFunction(node):
+    score = 0
+    for box in node.state.listOfBoxesPos:
+        score += minDistOfBoxToGoal(node.state, box) * len(node.state.grid) # Passes everything
+    score += calculateDistFromBoxes(node.state)
+    return score
+
 #####################
 # Launch the search #
 #####################
@@ -150,7 +180,7 @@ tic = time.process_time()
 
 tic = time.process_time()
 problem = Sokoban(sys.argv[1])
-solution = breadth_first_graph_search(problem)
+solution = breadth_first_tree_search(problem)
 for n in solution.path():
     print(n.state)
 toc = time.process_time()
