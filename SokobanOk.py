@@ -1,4 +1,4 @@
-# Author Jonathan Miel 16013 & Charles Vandermies 15123
+# Authors Jonathan Miel 16013 & Charles Vandermies 15123
 
 import time
 import sys
@@ -45,6 +45,7 @@ class State:
 class Sokoban(Problem):
     def __init__(self, initial):
         global goal_pos
+        #Pour run depuis shell vers dossier spécifique, ajouter "./benchsGiven/" + aux deux path ci-dessous
         pathInit = str(initial + ".init")
         pathGoal = str(initial + ".goal")
         boxes_pos = [] #Orginal position of boxes
@@ -221,7 +222,7 @@ def hamiltonDistance(state, box_pos):
 def Heuristic(node):
     score = 0
     for box_pos in node.state.boxes_pos:
-        score += hamiltonDistance(node.state, box_pos) * len(node.state.grid) # Passes everything
+        score += hamiltonDistance(node.state, box_pos) * len(node.state.grid)
     score += distFromBox(node.state)
     return score
 
