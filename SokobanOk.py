@@ -1,4 +1,4 @@
-# Author Jonathan Miel 16013 & Charles Vandermies 15123
+# Authors Jonathan Miel 16013 & Charles Vandermies 15123
 
 import time
 import sys
@@ -45,85 +45,86 @@ class State:
 class Sokoban(Problem):
     def __init__(self, initial):
         global goal_pos
+        #Pour run depuis shell vers dossier spécifique, ajouter "./benchsGiven/" + aux deux path ci-dessous
         pathInit = str(initial + ".init")
         pathGoal = str(initial + ".goal")
         boxes_pos = [] #Orginal position of boxes
         goal_pos = [] #Final supposed position of boxes
 
-        with open(pathGoal, "r") as file:
-            grid_go = []
-            for line in file:
-                strippedLine = line.rstrip('\n')
-                listedLine = list(strippedLine)       
-                grid_go.append(listedLine)
-            grid_go.pop(0)
-            grid_go.pop()
-
-            for i in range(0, len(grid_go)):
-                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]       
-            goal_pos.append([[i, j] for i, nl in enumerate(grid_go) for j, nle in enumerate(nl) if nle == "."])
-            goal_pos = list(chain(*goal_pos))
-        
         # with open(pathGoal, "r") as file:
-        #     data_read = file.read()
-        #     grid_go = data_read.split("\n")
+        #     grid_go = []
+        #     for line in file:
+        #         strippedLine = line.rstrip('\n')
+        #         listedLine = list(strippedLine)       
+        #         grid_go.append(listedLine)
         #     grid_go.pop(0)
         #     grid_go.pop()
-        #     grid_go.pop()
-        #     for i in range(0, len(grid_go)):
-        #         grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
 
-        #     i = 0
-        #     for line in grid_go:
-        #         for j in range(0, len(line)):
-        #             if line[j] == ".":
-        #                 #Avatar
-        #                 goal_pos.append((i, j))
-        #         i+=1
+        #     for i in range(0, len(grid_go)):
+        #         grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]       
+        #     goal_pos.append([[i, j] for i, nl in enumerate(grid_go) for j, nle in enumerate(nl) if nle == "."])
+        #     goal_pos = list(chain(*goal_pos))
+        
+        with open(pathGoal, "r") as file:
+            data_read = file.read()
+            grid_go = data_read.split("\n")
+            grid_go.pop(0)
+            grid_go.pop()
+            grid_go.pop()
+            for i in range(0, len(grid_go)):
+                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
+
+            i = 0
+            for line in grid_go:
+                for j in range(0, len(line)):
+                    if line[j] == ".":
+                        #Avatar
+                        goal_pos.append((i, j))
+                i+=1
                 
 
-        with open(pathInit, "r") as file:
-            grid_in = []
-            for line in file:
-                strippedLine = line.rstrip('\n')
-                listedLine = list(strippedLine)       
-                grid_in.append(listedLine)
-            grid_in.pop(0)
-            grid_in.pop()
-
-            for i in range(0, len(grid_in)):
-                grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
-
-        for line in grid_in :
-            for col in line:
-                if col == "@":
-                    curr_pos = [grid_in.index(line), line.index(col)]
-            
-        boxes_pos.append([[i, j] for i, nl in enumerate(grid_in) for j, nle in enumerate(nl) if nle == "$"])
-        boxes_pos = list(chain(*boxes_pos))
-
         # with open(pathInit, "r") as file:
-        #     data_read = file.read()
-        #     grid_in = data_read.split("\n")
-        #     #Remove the first line and the two last ones
+        #     grid_in = []
+        #     for line in file:
+        #         strippedLine = line.rstrip('\n')
+        #         listedLine = list(strippedLine)       
+        #         grid_in.append(listedLine)
         #     grid_in.pop(0)
         #     grid_in.pop()
-        #     grid_in.pop()
+
         #     for i in range(0, len(grid_in)):
         #         grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
 
-        #     curr_pos = (0,0) #Original position of the avatar
-        #     #Read grid for important elem
-        #     i = 0
-        #     for line in grid_in:
-        #         for j in range(0, len(line)):
-        #             if line[j] == "@":
-        #                 #Avatar
-        #                 curr_pos = (i, j)
-        #             elif line[j] == "$":
-        #                 #Box
-        #                 boxes_pos.append((i, j))
-        #         i+=1
+        # for line in grid_in :
+        #     for col in line:
+        #         if col == "@":
+        #             curr_pos = [grid_in.index(line), line.index(col)]
+            
+        # boxes_pos.append([[i, j] for i, nl in enumerate(grid_in) for j, nle in enumerate(nl) if nle == "$"])
+        # boxes_pos = list(chain(*boxes_pos))
+
+        with open(pathInit, "r") as file:
+            data_read = file.read()
+            grid_in = data_read.split("\n")
+            #Remove the first line and the two last ones
+            grid_in.pop(0)
+            grid_in.pop()
+            grid_in.pop()
+            for i in range(0, len(grid_in)):
+                grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
+
+            curr_pos = (0,0) #Original position of the avatar
+            #Read grid for important elem
+            i = 0
+            for line in grid_in:
+                for j in range(0, len(line)):
+                    if line[j] == "@":
+                        #Avatar
+                        curr_pos = (i, j)
+                    elif line[j] == "$":
+                        #Box
+                        boxes_pos.append((i, j))
+                i+=1
 
         initial_state = State(grid_in, boxes_pos, curr_pos)
         # Subclass constructor adds other argument
@@ -256,7 +257,7 @@ def hamiltonDistance(state, box_pos):
 def Heuristic(node):
     score = 0
     for box_pos in node.state.boxes_pos:
-        score += hamiltonDistance(node.state, box_pos) * len(node.state.grid) # Passes everything
+        score += hamiltonDistance(node.state, box_pos) * len(node.state.grid)
     score += distFromBox(node.state)
     return score
 
