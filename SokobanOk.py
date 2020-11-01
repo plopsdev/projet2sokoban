@@ -46,10 +46,10 @@ class State:
     def __hash__(self):
         return self.__str__().__hash__()
 
-        
+
 class Sokoban(Problem):
     def __init__(self, initial):
-
+        global goal_pos
         pathInit = str(initial + ".init")
         pathGoal = str(initial + ".goal")
         boxes_pos = [] #Orginal position of boxes
