@@ -65,6 +65,92 @@ def readStateFromInit(init):
         print(grid)
     return State(grid, boxes_pos, curr_pos)
 
+
+
+#################
+# Problem class #
+#################
+
+class Sokoban(Problem):
+    def __init__(self, init):
+        # Extract state from file
+        global goal_pos
+        goal_pos = readStateFromGoal(init + ".goal")
+        initState = readStateFromInit(init + ".init")
+        # Extend super init
+        super().__init__(initState)
+
+    def goal_test(self, state):
+        for elem in goal_pos:
+            if not elem in state.boxes_pos:
+                return False
+        return True
+    
+    def actions(self, state):
+        direction_checked=[0, 0]
+        movements=[]
+
+        for direction in directions:
+            direction_checked[0] = state.curr_pos[0] + direction[0]
+            direction_checked[1] = state.curr_pos[1] + direction[1]
+
+            if inBounds(state.grid, (direction_checked[0], direction_checked[1])) and (state.grid[direction_checked[0]][direction_checked[1]] == ' ' or (state.grid[direction_checked[0]][direction_checked[1]] == '$' and canPushBox(state.grid, state.curr_pos, (direction_checked[0],direction_checked[1])) and isPushingOK(state, direction, direction_checked[0], direction_checked[1]))):
+                movements.append(direction)  
+
+        return movements    
+
+    def result(self, state, action):
+        new_state = deepcopy(state)
+        #Calculate new avatar pos
+        new_state.curr_pos = (state.curr_pos[0] + action[0], state.curr_pos[1] + action[1])
+        #Clear old pos in grid, update avatar pos in state
+        print(new_state.grid[state.curr_pos[0]][state.curr_pos[1]])
+        new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:]
+        print(new_state.grid)
+        if(new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$"):
+            #Move box before updating avatar in grid
+            for index in range(0, len(new_state.boxes_pos)):
+                if (new_state.curr_pos[0], new_state.curr_pos[1]) == new_state.boxes_pos[index]:
+                    #Calculate new coordinate
+                    newX = action[0] + new_state.curr_pos[0]
+                    newY = action[1] + new_state.curr_pos[1]
+                    new_state.boxes_pos[index] = (newX, newY)
+                    new_state.grid[newX] = new_state.grid[newX][:newY] + "$" + new_state.grid[newX][newY+1:]
+        #Update avatar in grid
+        new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:]
+        return new_state
+
+class State:
+    def __init__(self, gridInit, boxes_pos, curr_pos):
+        # Save state variable
+        self.boxes_pos = boxes_pos
+        self.curr_pos = curr_pos
+        self.grid = gridInit
+
+    def __str__(self):
+        string = ""
+        for l in self.grid:
+            for c in l:
+                string += c
+            string += "\n"
+        return string
+
+    def __repr__(self):  # Full representation
+        return str((self.curr_pos, self.boxes_pos, self.grid))
+
+    def __eq__(self, other):
+        return (other.grid == self.grid)
+
+    def __lt__(self, node):
+        return self.grid < node.grid
+
+    def __hash__(self):
+        return self.__str__().__hash__()
+
+######################
+# Auxiliary function #
+######################
+
 #Add a line of wall
 def addALineOfWall(string, length):
     for i in range (0, length+2):
@@ -116,14 +202,14 @@ def isPushingOK(state, dir, x, y):
     return result
 
 #Check if two position are adjacent
-def arePosAdjacent(posA, posB):
+def isAdjacent(posA, posB):
     distI = abs(posA[0] - posB[0])
     distJ = abs(posA[1] - posB[1])
     return (distI + distJ) < 2
 
 #Check if char can push the box from this position
 def canPushBox(grid, char, box):
-    if arePosAdjacent(char, box):
+    if isAdjacent(char, box):
         i = 2*box[0] - char[0]
         j = 2*box[1] - char[1]
         if inBounds(grid, (i, j)) and grid[i][j] == " ":
@@ -131,14 +217,14 @@ def canPushBox(grid, char, box):
     return False
 
 #Calculate the minimum position from the avatar to a box
-def calculateDistFromBoxes(state):
+def distFromBox(state):
     best = len(state.grid) + len(state.grid[0])
     for box in state.boxes_pos:
         best = min(best, (abs(box[0] - state.curr_pos[0]) + abs(box[1] - state.curr_pos[1])))
     return best
 
 # Return the minimum hamilton distance to reach a goal
-def minDistOfBoxToGoal(state, box):
+def boxGoalMinDistance(state, box):
     best = len(state.grid) + len(state.grid[0])
     for goal in goal_pos:
         best = min(best, (abs(goal[0] - box[0]) + abs(goal[1] - box[1])))
@@ -146,103 +232,20 @@ def minDistOfBoxToGoal(state, box):
 
 # Heuristic function
 # Minimal value will be explored first !!!
-def heuristicFunction(node):
+def Heuristic(node):
     score = 0
     for box in node.state.boxes_pos:
-        score += minDistOfBoxToGoal(node.state, box) * len(node.state.grid) # Passes everything
-    score += calculateDistFromBoxes(node.state)
+        score += boxGoalMinDistance(node.state, box) * len(node.state.grid) # Passes everything
+    score += distFromBox(node.state)
     return score
-
-
-#################
-#   My classes  #
-#################
-
-class Sokoban(Problem):
-    def __init__(self, init):
-        # Extract state from file
-        global goal_pos
-        goal_pos = readStateFromGoal(init + ".goal")
-        initState = readStateFromInit(init + ".init")
-        # Extend super init
-        super().__init__(initState)
-
-    def goal_test(self, state):
-        for elem in goal_pos:
-            if not elem in state.boxes_pos:
-                return False
-        return True
-    
-    def actions(self, state):
-        direction_checked=[0, 0]
-        movements=[]
-
-        for direction in directions:
-            direction_checked[0] = state.curr_pos[0] + direction[0]
-            direction_checked[1] = state.curr_pos[1] + direction[1]
-
-            if inBounds(state.grid, (direction_checked[0], direction_checked[1])) and (state.grid[direction_checked[0]][direction_checked[1]] == ' ' or (state.grid[direction_checked[0]][direction_checked[1]] == '$' and canPushBox(state.grid, state.curr_pos, (direction_checked[0],direction_checked[1])) and isPushingOK(state, direction, direction_checked[0], direction_checked[1]))):
-                movements.append(direction)  
-
-        return movements    
-
-    def result(self, state, action):
-        new_state = deepcopy(state)
-        #Calculate new avatar pos
-        new_state.curr_pos = (state.curr_pos[0] + action[0], state.curr_pos[1] + action[1])
-        #Clear old pos in grid, update avatar pos in state
-        new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:]
-        if(new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$"):
-            #Move box before updating avatar in grid
-            for index in range(0, len(new_state.boxes_pos)):
-                if (new_state.curr_pos[0], new_state.curr_pos[1]) == new_state.boxes_pos[index]:
-                    #Calculate new coordinate
-                    newX = action[0] + new_state.curr_pos[0]
-                    newY = action[1] + new_state.curr_pos[1]
-                    new_state.boxes_pos[index] = (newX, newY)
-                    new_state.grid[newX] = new_state.grid[newX][:newY] + "$" + new_state.grid[newX][newY+1:]
-        #Update avatar in grid
-        new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:]
-        return new_state
-
-class State:
-    def __init__(self, gridInit, boxes_pos, curr_pos):
-        # Save state variable
-        self.boxes_pos = boxes_pos
-        self.curr_pos = curr_pos
-        self.grid = gridInit
-
-    def __str__(self):
-        string = ""
-        for l in self.grid:
-            for c in l:
-                string += c
-            string += "\n"
-        return string
-
-    def __repr__(self):  # Full representation
-        return str((self.curr_pos, self.boxes_pos, self.grid))
-
-    def __eq__(self, other):
-        return (other.grid == self.grid)
-
-    def __lt__(self, node):
-        return self.grid < node.grid
-
-    def __hash__(self):
-        return self.__str__().__hash__()
 
 #####################
 # Launch the search #
 #####################
 
-<<<<<<< HEAD
-=======
-# Init
->>>>>>> b4a600e0c124105d10fd71b66c77f014d1700024
 tic = time.process_time()
 problem = Sokoban(sys.argv[1])
-solution = astar_search(problem, heuristicFunction) #todo insérer ici une fonction heuristique h en paramètre
+solution = astar_search(problem, Heuristic) #todo insérer ici une fonction heuristique h en paramètre
 for n in solution.path():
     print(n.state)
 
