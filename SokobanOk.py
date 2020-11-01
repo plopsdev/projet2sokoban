@@ -196,11 +196,13 @@ def boxOk(state, direction, direction_checked):
 
     side_checked[0] = direction_checked[0] + direction[0]
     side_checked[1] = direction_checked[1] + direction[1]
-    
+
     state.grid[side_checked[0]] = state.grid[side_checked[0]][:side_checked[1]] + "$" + state.grid[side_checked[0]][side_checked[1]+1:]
     result = not isKOState(state, (side_checked[0], side_checked[1]))
+
     state.grid[side_checked[0]] = state.grid[side_checked[0]][:side_checked[1]] + " " + state.grid[side_checked[0]][side_checked[1]+1:]
     state.grid[direction_checked[0]] = state.grid[direction_checked[0]][:direction_checked[1]] + "$" + state.grid[direction_checked[0]][direction_checked[1]+1:]
+    
     return result
 
 #Check if curr_pos can push the box_pos from this position
