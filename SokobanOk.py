@@ -27,11 +27,9 @@ def readGridFromFile(Texte):
         #Truncate first and last collumn
         for i in range(0, len(grid)):
             grid[i] = grid[i][1 : len(grid[i])-1]
-
-        print(grid)
         return grid
 
-# Read goal file and return a grid containing the data
+# Read goal file and return a grid containing the goal_pos [(),()]
 def readStateFromGoal(goal):
 
     grid = readGridFromFile(goal)
@@ -64,6 +62,7 @@ def readStateFromInit(init):
                     #Box
                     boxes_pos.append((i, j))
             i+=1
+        print(grid)
     return State(grid, boxes_pos, curr_pos)
 
 #Add a line of wall
@@ -131,29 +130,6 @@ def canPushBox(grid, char, box):
             return True
     return False
 
-#Generate successor from state
-#Pre : Successor can be generated => if box it can be pushed
-# def generateSuccessor(state, dir):
-#     new_state = deepcopy(state)
-#     #Calculate new avatar pos
-#     new_state.curr_pos = (state.curr_pos[0] + dir[0], state.curr_pos[1] + dir[1])
-#     #Clear old pos in grid, update avatar pos in state
-#     new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:]
-#     if(new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$"):
-#         #Move box before updating avatar in grid
-#         for index in range(0, len(new_state.boxes_pos)):
-#             if (new_state.curr_pos[0], new_state.curr_pos[1]) == new_state.boxes_pos[index]:
-#                 #Calculate new coordinate
-#                 newX = dir[0] + new_state.curr_pos[0]
-#                 newY = dir[1] + new_state.curr_pos[1]
-#                 new_state.boxes_pos[index] = (newX, newY)
-#                 new_state.grid[newX] = new_state.grid[newX][:newY] + "$" + new_state.grid[newX][newY+1:]
-#     #Update avatar in grid
-#     new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:]
-#     return new_state
-
-
-
 #Calculate the minimum position from the avatar to a box
 def calculateDistFromBoxes(state):
     best = len(state.grid) + len(state.grid[0])
@@ -198,12 +174,17 @@ class Sokoban(Problem):
         return True
     
     def actions(self, state):
-        for i in range(0, len(directions)):
-            x = state.curr_pos[0] + directions[i][0]
-            y = state.curr_pos[1] + directions[i][1]
-            if inBounds(state.grid, (x, y)) and (state.grid[x][y] == ' ' or (state.grid[x][y] == '$' and canPushBox(state.grid, state.curr_pos, (x,y)) and isPushingOK(state, directions[i], x, y))):
-                #Yield result
-                yield (directions[i])        
+        direction_checked=[0, 0]
+        movements=[]
+
+        for direction in directions:
+            direction_checked[0] = state.curr_pos[0] + direction[0]
+            direction_checked[1] = state.curr_pos[1] + direction[1]
+
+            if inBounds(state.grid, (direction_checked[0], direction_checked[1])) and (state.grid[direction_checked[0]][direction_checked[1]] == ' ' or (state.grid[direction_checked[0]][direction_checked[1]] == '$' and canPushBox(state.grid, state.curr_pos, (direction_checked[0],direction_checked[1])) and isPushingOK(state, direction, direction_checked[0], direction_checked[1]))):
+                movements.append(direction)  
+
+        return movements    
 
     def result(self, state, action):
         new_state = deepcopy(state)
