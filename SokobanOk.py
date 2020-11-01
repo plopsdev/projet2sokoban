@@ -236,13 +236,11 @@ class State:
 # Launch the search #
 #####################
 
-# Init
-now = time.time()
+tic = time.process_time()
 problem = Sokoban(sys.argv[1])
 solution = astar_search(problem, heuristicFunction) #todo insérer ici une fonction heuristique h en paramètre
 for n in solution.path():
     print(n.state)
 
-#Calculate time elapsed
-later = time.time()
-print(later - now)
+toc = time.process_time()
+print("Le programme s'est exécuté en "+str(toc-tic)+" secondes.")
