@@ -3,7 +3,6 @@
 import time
 import sys
 from copy import deepcopy
-from os import listdir, system
 from search import *
 
 # LEFT RIGHT UP DOWN
@@ -23,10 +22,18 @@ class State:
 
     def __str__(self):
         string = ""
+        for i in range(0, len(self.grid[0])+2):
+            string+="#"
+        string+="\n"
         for l in self.grid:
+            string+="#"
             for c in l:
                 string += c
+            string+="#"
             string += "\n"
+        for i in range(0, len(self.grid[0])+2):
+            string+="#"
+        string+="\n"
         return string
 
     def __repr__(self):  # Full representation
@@ -88,9 +95,7 @@ class Sokoban(Problem):
                         boxes_pos.append((i, j))
                 i+=1
 
-        initial_state = State(grid_in, boxes_pos, curr_pos)
-        # Subclass constructor adds other argument
-        super().__init__(initial_state)
+        self.initial = State(grid_in, boxes_pos, curr_pos)
 
     def goal_test(self, state): #counts if there all the box positions correspond to the goal position, compares it to goal_pos size
         ok=0
@@ -140,39 +145,31 @@ class Sokoban(Problem):
 # Auxiliary function #
 ######################
 
-#Add a line of wall
-def addALineOfWall(string, length):
-    for i in range (0, length+2):
-        string += "#"
-    string += "\n"
-    return string
-
 def inBounds(grid, pos): #check if pos is in the area of the puzzle
     return 0 <= pos[0] and pos[0] < len(grid) and 0 <= pos[1] and pos[1] < len(grid[0])
 
-#Check if the state is a KO state
-def isKOState(state, box_pos):
-    #Check direction in which i can push
-    if box_pos in goal_pos :
-        # If box_pos on goal state, it's never a KO state
+def isNok(state, box_pos):
+    if box_pos in goal_pos : #if the destination is a goal, it's a ok state
         return False
     
-    freedom = 0
-    for x in range(0, 2): #check LEFT and RIGHT
-        i = box_pos[0] + directions[x][0]
-        j = box_pos[1] + directions[x][1]
-        if inBounds(state.grid, (i, j)) and (state.grid[i][j] == " " or state.grid[i][j] == "@"):
-            freedom += 1
-    if freedom == 2:
+    possibility = 0
+    direction_checked=[0,0]
+    for index in range(0, 2): #check horizontal directions
+        direction_checked[0] = box_pos[0] + directions[index][0]
+        direction_checked[1] = box_pos[1] + directions[index][1]
+
+        if inBounds(state.grid, (direction_checked[0], direction_checked[1])) and (state.grid[direction_checked[0]][direction_checked[1]] == " " or state.grid[direction_checked[0]][direction_checked[1]] == "@"):
+            possibility += 1
+    if possibility == 2:
         return False
     
-    freedom = 0
-    for x in range(2, 4): #check UP and DOWN
-        i = box_pos[0] + directions[x][0]
-        j = box_pos[1] + directions[x][1]
-        if inBounds(state.grid, (i, j)) and (state.grid[i][j] == " " or state.grid[i][j] == "@"):
-            freedom += 1
-    if freedom == 2:
+    possibility = 0
+    for index in range(2, 4): #check vertical directions
+        direction_checked[0] = box_pos[0] + directions[index][0]
+        direction_checked[1] = box_pos[1] + directions[index][1]
+        if inBounds(state.grid, (direction_checked[0], direction_checked[1])) and (state.grid[direction_checked[0]][direction_checked[1]] == " " or state.grid[direction_checked[0]][direction_checked[1]] == "@"):
+            possibility += 1
+    if possibility == 2:
         return False
     return False
 
@@ -186,7 +183,7 @@ def boxOk(state, direction, direction_checked): #check if the result of the push
     side_checked[1] = direction_checked[1] + direction[1]
 
     state.grid[side_checked[0]] = state.grid[side_checked[0]][:side_checked[1]] + "$" + state.grid[side_checked[0]][side_checked[1]+1:]
-    result = not isKOState(state, (side_checked[0], side_checked[1]))
+    result = not isNok(state, (side_checked[0], side_checked[1]))
 
     state.grid[side_checked[0]] = state.grid[side_checked[0]][:side_checked[1]] + " " + state.grid[side_checked[0]][side_checked[1]+1:]
     state.grid[direction_checked[0]] = state.grid[direction_checked[0]][:direction_checked[1]] + "$" + state.grid[direction_checked[0]][direction_checked[1]+1:]
@@ -195,10 +192,10 @@ def boxOk(state, direction, direction_checked): #check if the result of the push
 
 def boxPush(grid, curr_pos, box_pos): #check if it's possible to push the box
     if abs(curr_pos[0] - box_pos[0])+ abs(curr_pos[1] - box_pos[1]) == 1: #check if the box is adjacent
-        i = 2*box_pos[0] - curr_pos[0]
-        j = 2*box_pos[1] - curr_pos[1]
-        if inBounds(grid, (i, j)) and grid[i][j] == " ":
+
+        if inBounds(grid, (2*box_pos[0] - curr_pos[0], 2*box_pos[1] - curr_pos[1])) and grid[2*box_pos[0] - curr_pos[0]][2*box_pos[1] - curr_pos[1]] == " ":
             return True
+
     return False
 
 #Calculate the minimum distance from the Character to a box_pos
