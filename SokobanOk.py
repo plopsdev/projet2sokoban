@@ -140,10 +140,10 @@ class Sokoban(Problem):
         return new_state
 
 
+#######################
+# Auxiliary functions #
+#######################
 
-######################
-# Auxiliary function #
-######################
 
 def inBounds(grid, pos): #check if pos is in the area of the puzzle
     return 0 <= pos[0] and pos[0] < len(grid) and 0 <= pos[1] and pos[1] < len(grid[0])
@@ -198,17 +198,17 @@ def boxPush(grid, curr_pos, box_pos): #check if it's possible to push the box
 
     return False
 
+def hamiltonDistance(state, box_pos):
+    best_pos = len(state.grid) + len(state.grid[0])
+    for goal in goal_pos:
+        best_pos = min(best_pos, (abs(goal[0] - box_pos[0]) + abs(goal[1] - box_pos[1])))
+    return best_pos
+
 #Calculate the minimum distance from the Character to a box_pos
 def distFromBox(state):
     best_pos = len(state.grid) + len(state.grid[0])
     for box_pos in state.boxes_pos:
         best_pos = min(best_pos, (abs(box_pos[0] - state.curr_pos[0]) + abs(box_pos[1] - state.curr_pos[1])))
-    return best_pos
-
-def hamiltonDistance(state, box_pos):
-    best_pos = len(state.grid) + len(state.grid[0])
-    for goal in goal_pos:
-        best_pos = min(best_pos, (abs(goal[0] - box_pos[0]) + abs(goal[1] - box_pos[1])))
     return best_pos
 
 # Heuristic function : Combine distances of the previous optimizations
@@ -219,16 +219,18 @@ def Heuristic(node):
     optimized_distance += distFromBox(node.state)
     return optimized_distance
 
+
 #####################
 # Launch the search #
 #####################
 
+
 tic = time.process_time()
 problem = Sokoban(sys.argv[1])
-solution = astar_search(problem, Heuristic) #todo insérer ici une fonction heuristique h en paramètre
+solution = astar_search(problem, Heuristic) #TODO insert here an heuristic function in argument
 for n in solution.path():
     print(n.state)
 
-#Afficher le temps d'exécution écoulé
+#Display execution time
 toc = time.process_time()
 print("Le programme s'est exécuté en "+str(toc-tic)+" secondes.")
