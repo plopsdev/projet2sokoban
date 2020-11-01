@@ -23,10 +23,18 @@ class State:
 
     def __str__(self):
         string = ""
+        for i in range(0, len(self.grid[0])+2):
+            string+="#"
+        string+="\n"
         for l in self.grid:
+            string+="#"
             for c in l:
                 string += c
+            string+="#"
             string += "\n"
+        for i in range(0, len(self.grid[0])+2):
+            string+="#"
+        string+="\n"
         return string
 
     def __repr__(self):  # Full representation
@@ -140,13 +148,6 @@ class Sokoban(Problem):
 ######################
 # Auxiliary function #
 ######################
-
-#Add a line of wall
-def addALineOfWall(string, length):
-    for i in range (0, length+2):
-        string += "#"
-    string += "\n"
-    return string
 
 def inBounds(grid, pos): #check if pos is in the area of the puzzle
     return 0 <= pos[0] and pos[0] < len(grid) and 0 <= pos[1] and pos[1] < len(grid[0])
