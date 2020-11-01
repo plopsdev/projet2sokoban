@@ -119,10 +119,7 @@ class Sokoban(Problem):
 
     def result(self, state, action):
         new_state = deepcopy(state)
-
-        new_state.curr_pos[0] = state.curr_pos[0] + action[0]
-        new_state.curr_pos[1] = state.curr_pos[0] + action[1]
-        
+        new_state.curr_pos = (state.curr_pos[0] + action[0], state.curr_pos[1] + action[1])
         new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:] #replace the curr_pos before moving with blank
 
         if(new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$"):
