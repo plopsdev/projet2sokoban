@@ -3,7 +3,6 @@
 import time
 import sys
 from copy import deepcopy
-from os import listdir, system
 from search import *
 
 # LEFT RIGHT UP DOWN
