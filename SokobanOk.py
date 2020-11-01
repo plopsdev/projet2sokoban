@@ -1,4 +1,4 @@
-__author__ = 'Cyril de Vogelaere : 2814-11-00 & Thuin florian : 0656-11-00'
+# Author Jonathan Miel 16013 & Charles Vandermies 15123
 
 import time
 import sys
@@ -14,69 +14,61 @@ global goal_pos
 # My function #
 ###############
 
-def readGridFromFile(Texte):
-    with open(Texte, "r") as file:
-        data_read = file.read()
-        grid = data_read.split("\n")
-        #Remove empty line
-        grid.pop()
-        #Remove last line
-        grid.pop()
-        #Remove first line
-        grid.pop(0)
-        #Truncate first and last collumn
-        for i in range(0, len(grid)):
-            grid[i] = grid[i][1 : len(grid[i])-1]
-        return grid
-
-# Read goal file and return a grid containing the goal_pos [(),()]
-def readStateFromGoal(goal):
-
-    grid = readGridFromFile(goal)
-    goal_pos = [] #Orginal position of boxes
-    i = 0
-    for line in grid:
-        for j in range(0, len(line)):
-            if line[j] == ".":
-                #Avatar
-                goal_pos.append((i, j))
-        i+=1
-    return goal_pos
-
-# Read init file and return a state containing the data
-def readStateFromInit(init):
-    with open(init, "r") as file:
-        # Lecture du fichier
-        grid = readGridFromFile(init)
-        # Creation d'un tableau equivalent au probleme
-        curr_pos = (0,0) #Original position of the avatar
-        boxes_pos = [] #Orginal position of boxes
-        #Read grid for important elem
-        i = 0
-        for line in grid:
-            for j in range(0, len(line)):
-                if line[j] == "@":
-                    #Avatar
-                    curr_pos = (i, j)
-                elif line[j] == "$":
-                    #Box
-                    boxes_pos.append((i, j))
-            i+=1
-        print(grid)
-    return State(grid, boxes_pos, curr_pos)
-
-
 
 #################
 # Problem class #
 #################
 
 class Sokoban(Problem):
-    def __init__(self, init):
-        # Extract state from file
-        global goal_pos
-        goal_pos = readStateFromGoal(init + ".goal")
-        initState = readStateFromInit(init + ".init")
+    def __init__(self, initial):
+
+        pathInit = str(initial + ".init")
+        pathGoal = str(initial + ".goal")
+        boxes_pos = [] #Orginal position of boxes
+        goal_pos = [] #Final supposed position of boxes
+        
+        with open(pathGoal, "r") as file:
+            data_read = file.read()
+            grid_go = data_read.split("\n")
+            grid_go.pop(0)
+            grid_go.pop()
+            grid_go.pop()
+            for i in range(0, len(grid_go)):
+                grid_go[i] = grid_go[i][1 : len(grid_go[i])-1]
+
+            i = 0
+            for line in grid_go:
+                for j in range(0, len(line)):
+                    if line[j] == ".":
+                        #Avatar
+                        goal_pos.append((i, j))
+                i+=1
+                
+        with open(pathInit, "r") as file:
+            data_read = file.read()
+            grid_in = data_read.split("\n")
+            #Remove the first line and the two last ones
+            grid_in.pop(0)
+            grid_in.pop()
+            grid_in.pop()
+            #Truncate first and last collumn
+            for i in range(0, len(grid_in)):
+                grid_in[i] = grid_in[i][1 : len(grid_in[i])-1]
+
+            curr_pos = (0,0) #Original position of the avatar
+            #Read grid for important elem
+            i = 0
+            for line in grid_in:
+                for j in range(0, len(line)):
+                    if line[j] == "@":
+                        #Avatar
+                        curr_pos = (i, j)
+                    elif line[j] == "$":
+                        #Box
+                        boxes_pos.append((i, j))
+                i+=1
+
+        initState = State(grid_in, boxes_pos, curr_pos)
         # Extend super init
         super().__init__(initState)
 
