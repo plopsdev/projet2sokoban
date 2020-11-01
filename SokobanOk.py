@@ -95,23 +95,26 @@ class Sokoban(Problem):
         # Subclass constructor adds other argument
         super().__init__(initState)
 
-    def goal_test(self, state):
-        for elem in goal_pos:
-            if not elem in state.boxes_pos:
-                return False
-        return True
+    def goal_test(self, state): #counts if there all the box positions correspond to the goal position, compares it to goal_pos size
+        ok=0
+
+        for box_pos in state.boxes_pos:
+            if box_pos in goal_pos:
+                ok+=1
+
+        return ok==len(goal_pos)
     
     def actions(self, state):
         direction_checked=[0, 0]
         movements=[]
 
-        for direction in directions:
-            direction_checked[0] = state.curr_pos[0] + direction[0]
+        for direction in directions: #check every direction 
+            direction_checked[0] = state.curr_pos[0] + direction[0]  #update direction checked based on direction
             direction_checked[1] = state.curr_pos[1] + direction[1]
 
-            if inBounds(state.grid, (direction_checked[0], direction_checked[1])):
+            if inBounds(state.grid, (direction_checked[0], direction_checked[1])): #checks if in the puzzle area
                 if state.grid[direction_checked[0]][direction_checked[1]] == ' ' or (state.grid[direction_checked[0]][direction_checked[1]] == '$' and boxPush(state.grid, state.curr_pos, (direction_checked[0],direction_checked[1])) and boxOk(state, direction, direction_checked)):
-                    movements.append(direction)  
+                    movements.append(direction) #update an array of possible movement given the state
 
         return movements    
 
@@ -147,8 +150,7 @@ def addALineOfWall(string, length):
     string += "\n"
     return string
 
-#Check if position is inbound
-def inBounds(grid, pos):
+def inBounds(grid, pos): #check if pos is in the area of the puzzle
     return 0 <= pos[0] and pos[0] < len(grid) and 0 <= pos[1] and pos[1] < len(grid[0])
 
 #Check if the state is a KO state
@@ -157,18 +159,18 @@ def isKOState(state, box_pos):
     if box_pos in goal_pos :
         # If box_pos on goal state, it's never a KO state
         return False
-    #Test LEFT AND RIGHT
+    
     freedom = 0
-    for x in range(0, 2):
+    for x in range(0, 2): #check LEFT and RIGHT
         i = box_pos[0] + directions[x][0]
         j = box_pos[1] + directions[x][1]
         if inBounds(state.grid, (i, j)) and (state.grid[i][j] == " " or state.grid[i][j] == "@"):
             freedom += 1
     if freedom == 2:
         return False
-    #Test LEFT AND RIGHT
+    
     freedom = 0
-    for x in range(2, 4):
+    for x in range(2, 4): #check UP and DOWN
         i = box_pos[0] + directions[x][0]
         j = box_pos[1] + directions[x][1]
         if inBounds(state.grid, (i, j)) and (state.grid[i][j] == " " or state.grid[i][j] == "@"):
@@ -177,9 +179,8 @@ def isKOState(state, box_pos):
         return False
     return False
 
-# Check if pushing box_pos will lead to a KO state
-# Pre : box_pos is pushable
-def boxOk(state, direction, direction_checked):
+
+def boxOk(state, direction, direction_checked): #check if the result of the pushed box leads to a deadlock
     result = False
     side_checked=[0,0]
     state.grid[direction_checked[0]] = state.grid[direction_checked[0]][:direction_checked[1]] + " " + state.grid[direction_checked[0]][direction_checked[1]+1:]
@@ -195,9 +196,8 @@ def boxOk(state, direction, direction_checked):
     
     return result
 
-#Check if curr_pos can push the box_pos from this position
-def boxPush(grid, curr_pos, box_pos):
-    if abs(curr_pos[0] - box_pos[0])+ abs(curr_pos[1] - box_pos[1]) == 1:
+def boxPush(grid, curr_pos, box_pos): #check if it's possible to push the box
+    if abs(curr_pos[0] - box_pos[0])+ abs(curr_pos[1] - box_pos[1]) == 1: #check if the box is adjacent
         i = 2*box_pos[0] - curr_pos[0]
         j = 2*box_pos[1] - curr_pos[1]
         if inBounds(grid, (i, j)) and grid[i][j] == " ":
@@ -211,8 +211,7 @@ def distFromBox(state):
         best_pos = min(best_pos, (abs(box_pos[0] - state.curr_pos[0]) + abs(box_pos[1] - state.curr_pos[1])))
     return best_pos
 
-# Return the minimum hamilton distance to reach a goal
-def boxGoalMinDistance(state, box_pos):
+def hamiltonDistance(state, box_pos):
     best_pos = len(state.grid) + len(state.grid[0])
     for goal in goal_pos:
         best_pos = min(best_pos, (abs(goal[0] - box_pos[0]) + abs(goal[1] - box_pos[1])))
@@ -223,7 +222,7 @@ def boxGoalMinDistance(state, box_pos):
 def Heuristic(node):
     score = 0
     for box_pos in node.state.boxes_pos:
-        score += boxGoalMinDistance(node.state, box_pos) * len(node.state.grid) # Passes everything
+        score += hamiltonDistance(node.state, box_pos) * len(node.state.grid) # Passes everything
     score += distFromBox(node.state)
     return score
 
