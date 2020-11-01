@@ -10,11 +10,6 @@ from search import *
 directions = [[0, -1], [0, 1], [-1, 0], [1, 0]]
 global goal_pos
 
-###############
-# My function #
-###############
-
-
 #################
 # Problem class #
 #################
@@ -97,7 +92,7 @@ class Sokoban(Problem):
                 i+=1
 
         initState = State(grid_in, boxes_pos, curr_pos)
-        # Extend super init
+        # Subclass constructor adds other argument
         super().__init__(initState)
 
     def goal_test(self, state):
@@ -131,10 +126,10 @@ class Sokoban(Problem):
             for index in range(0, len(new_state.boxes_pos)):
                 if (new_state.curr_pos[0], new_state.curr_pos[1]) == new_state.boxes_pos[index]:
                     #Calculate new coordinate
-                    newX = action[0] + new_state.curr_pos[0]
-                    newY = action[1] + new_state.curr_pos[1]
-                    new_state.boxes_pos[index] = (newX, newY)
-                    new_state.grid[newX] = new_state.grid[newX][:newY] + "$" + new_state.grid[newX][newY+1:]
+                    new_coord_X = action[0] + new_state.curr_pos[0]
+                    new_coord_Y = action[1] + new_state.curr_pos[1]
+                    new_state.boxes_pos[index] = (new_coord_X, new_coord_Y)
+                    new_state.grid[new_coord_X] = new_state.grid[new_coord_X][:new_coord_Y] + "$" + new_state.grid[new_coord_X][new_coord_Y+1:]
         #Update avatar in grid
         new_state.grid[new_state.curr_pos[0]] = new_state.grid[new_state.curr_pos[0]][:new_state.curr_pos[1]] + "@" + new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]+1:]
         return new_state
