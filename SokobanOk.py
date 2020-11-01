@@ -94,8 +94,9 @@ class Sokoban(Problem):
             direction_checked[0] = state.curr_pos[0] + direction[0]
             direction_checked[1] = state.curr_pos[1] + direction[1]
 
-            if inBounds(state.grid, (direction_checked[0], direction_checked[1])) and (state.grid[direction_checked[0]][direction_checked[1]] == ' ' or (state.grid[direction_checked[0]][direction_checked[1]] == '$' and canPushBox(state.grid, state.curr_pos, (direction_checked[0],direction_checked[1])) and isPushingOK(state, direction, direction_checked[0], direction_checked[1]))):
-                movements.append(direction)  
+            if inBounds(state.grid, (direction_checked[0], direction_checked[1])):
+                if state.grid[direction_checked[0]][direction_checked[1]] == ' ' or (state.grid[direction_checked[0]][direction_checked[1]] == '$' and boxPush(state.grid, state.curr_pos, (direction_checked[0],direction_checked[1])) and boxOk(state, direction, direction_checked[0], direction_checked[1])):
+                    movements.append(direction)  
 
         return movements    
 
@@ -104,9 +105,7 @@ class Sokoban(Problem):
         #Calculate new avatar pos
         new_state.curr_pos = (state.curr_pos[0] + action[0], state.curr_pos[1] + action[1])
         #Clear old pos in grid, update avatar pos in state
-        print(new_state.grid[state.curr_pos[0]][state.curr_pos[1]])
         new_state.grid[state.curr_pos[0]] = new_state.grid[state.curr_pos[0]][:state.curr_pos[1]] + " " + new_state.grid[state.curr_pos[0]][state.curr_pos[1]+1:]
-        print(new_state.grid)
         if(new_state.grid[new_state.curr_pos[0]][new_state.curr_pos[1]] == "$"):
             #Move box before updating avatar in grid
             for index in range(0, len(new_state.boxes_pos)):
@@ -190,7 +189,7 @@ def isKOState(state, box):
 
 # Check if pushing box will lead to a KO state
 # Pre : box is pushable
-def isPushingOK(state, dir, x, y):
+def boxOk(state, dir, x, y):
     result = False
     state.grid[x] = state.grid[x][:y] + " " + state.grid[x][y+1:]
     newBoxX = x + dir[0]
@@ -201,15 +200,9 @@ def isPushingOK(state, dir, x, y):
     state.grid[x] = state.grid[x][:y] + "$" + state.grid[x][y+1:]
     return result
 
-#Check if two position are adjacent
-def isAdjacent(posA, posB):
-    distI = abs(posA[0] - posB[0])
-    distJ = abs(posA[1] - posB[1])
-    return (distI + distJ) < 2
-
 #Check if char can push the box from this position
-def canPushBox(grid, char, box):
-    if isAdjacent(char, box):
+def boxPush(grid, char, box):
+    if abs(char[0] - box[0])+ abs(char[1] - box[1]) == 1:
         i = 2*box[0] - char[0]
         j = 2*box[1] - char[1]
         if inBounds(grid, (i, j)) and grid[i][j] == " ":
